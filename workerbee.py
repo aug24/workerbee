@@ -1,0 +1,120 @@
+import requests
+import getpass
+import sys
+import json
+import os
+from urlparse import urlparse
+import plotly.plotly as py
+import plotly.graph_objs as go
+import time
+import pandas as pd
+import matplotlib.pyplot as plt
+from pandas.tools.plotting import table
+import numpy as np
+
+current_milli_time = lambda: int(round(time.time() * 1000))
+
+class workerbee:
+
+  def __init__(self, username, debug):
+    self.clientName='workerbee'
+    self.username=username
+    self.loggedin=False
+    self.honeycomb='https://api-prod.bgchprod.info:8443/'
+    self.userInfo=None
+    try:
+      self.password=os.environ['WORKERBEE_PASSWORD'] 
+    except KeyError:
+      self.password=None
+    self.headers = {}
+    self.debug_flag = debug
+
+  def debug(self, message):
+    if (self.debug_flag):
+      print message
+
+  def login(self):
+    if self.password==None:
+      self.password=getpass.getpass()
+
+    data = {u"username": self.username, u"password": self.password, u"caller": u"workerbee"}
+    response = requests.post(self.honeycomb + 'api/login', params=data)
+    if response.status_code!=200:
+      print "Failed to log in; got return code " + str(response.status_code)
+      print response.text
+      sys.exit(1)
+    self.userInfo=response.json()
+    self.headers['X-Omnia-Access-Token']=str(self.userInfo['ApiSession'])
+    self.headers['Accept']='application/vnd.alertme.zoo-6.4+json'
+    self.headers['X-AlertMe-Client']=self.clientName
+    self.debug("Logged on")
+
+  def logout(self):
+    if self.userInfo==None:
+      return
+    response = self.post('api/logout', None)
+    if response.status_code!=204:
+      print "Failed to log off; got return code " + str(response.status_code)
+      print response.text
+      sys.exit(1)
+    self.userInfo==None
+    self.headers = {}
+    self.debug("Logged off")
+
+  def nodes(self):
+    if self.userInfo==None:
+      return
+    response = self.get('omnia/nodes', None)
+    self.nodeInfo=response.json()
+
+  def get(self, address, data):
+    headers = {'X-Omnia-Access-Token': str(self.userInfo['ApiSession'])}
+    return requests.get(self.honeycomb + address, headers=self.headers, params=data)
+
+  def post(self, address, data):
+    return requests.post(self.honeycomb + address, headers=self.headers, params=data)
+
+  def getNode(self, name):
+    for node in self.nodeInfo["nodes"]: 
+      if node["name"] == name:
+        return node
+    return Nil
+
+  def showNode(self, name):
+    for node in self.nodeInfo["nodes"]: 
+      if node["name"] == name:
+        print json.dumps(node, indent=4, sort_keys=True)
+
+  def getNodeAttribute(self, name, attribute):
+    url=self.getNode(name)["href"].split('/')
+    url="omnia/channels/" + attribute + "%40" + url[-1]
+    options = {
+      "start": current_milli_time() - 86400000,
+      "end": current_milli_time(),
+      "timeUnit": "MILLISECONDS", 
+      "rate": "60",
+      "operation": "AVG",
+      "interval": "120000"
+    }
+    data=self.get(url, options).json()
+    values=data['channels'][0]['values']
+    return values
+
+  def printNodeAttribute(self, name, attribute):
+    print json.dumps(self.getNodeAttribute(name, attribute))
+
+  def graphNodeAttribute(self, name, attribute, filename):
+    xdata=[]
+    ydata=[]
+    values=self.getNodeAttribute(name, attribute)
+    for value in sorted(values.iterkeys()):
+      xdata.append(value)
+      ydata.append(values[value])
+    xdf=pd.DataFrame({"timestamp": xdata})
+    ydf=pd.DataFrame({"temperature": ydata})
+
+    fig, ax = plt.subplots(figsize=(100, 20))
+    ax.plot(xdf,ydf)
+    plt.xlabel("Date (Unix Millis)")
+    plt.ylabel("Temperature (Centigrade)")
+    plt.savefig(filename, transparent=True)
