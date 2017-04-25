@@ -14,5 +14,6 @@ To create a graph of the last 24 hours 'temperature' channel from a specific dev
 
 ```
   read -s -p "Hivehome password: " WORKERBEE_PASSWORD; echo
+  export WORKERBEE_PASSWORD
   python graph.py --username <user name> --device <device name> --filename <file name>
 ```
