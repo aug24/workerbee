@@ -84,6 +84,10 @@ class workerbee:
     print "No such node as " + name
     sys.exit(1)
 
+  def showNodes(self):
+    for node in self.nodeInfo["nodes"]: 
+      print json.dumps(node, indent=4, sort_keys=True)
+
   def showNode(self, name):
     for node in self.nodeInfo["nodes"]: 
       if node["name"] == name:
@@ -102,6 +106,9 @@ class workerbee:
       "interval": "120000"
     }
     data=self.get(url, options).json()
+    if not 'channels' in data.keys():
+      print "Device '" + name + "' does not include '" + attribute + "' data"
+      sys.exit(1)
     values=data['channels'][0]['values']
     return values
 
