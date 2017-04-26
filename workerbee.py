@@ -12,7 +12,10 @@ import matplotlib.pyplot as plt
 from pandas.tools.plotting import table
 import numpy as np
 
-current_milli_time = lambda: int(round(time.time() * 1000))
+def time_millis_ago (ms): return lambda: int(round(time.time() * 1000) - int(ms))
+current_time_millis = time_millis_ago(0)
+yesterday_millis = time_millis_ago(24 * 60 * 60 * 1000)
+one_hour_ago_millis = time_millis_ago(60 * 60 * 1000)
 
 class workerbee:
 
@@ -78,7 +81,8 @@ class workerbee:
     for node in self.nodeInfo["nodes"]: 
       if node["name"] == name:
         return node
-    return Nil
+    print "No such node as " + name
+    sys.exit(1)
 
   def showNode(self, name):
     for node in self.nodeInfo["nodes"]: 
@@ -86,11 +90,12 @@ class workerbee:
         print json.dumps(node, indent=4, sort_keys=True)
 
   def getNodeAttribute(self, name, attribute):
-    url=self.getNode(name)["href"].split('/')
-    url="omnia/channels/" + attribute + "%40" + url[-1]
+    node=self.getNode(name)
+    deviceId=node["href"].split('/')[-1]
+    url="omnia/channels/" + attribute + "%40" + deviceId
     options = {
-      "start": current_milli_time() - 86400000,
-      "end": current_milli_time(),
+      "start": yesterday_millis(),
+      "end": current_time_millis(),
       "timeUnit": "MILLISECONDS", 
       "rate": "60",
       "operation": "AVG",
