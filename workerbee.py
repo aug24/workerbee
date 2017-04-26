@@ -120,6 +120,6 @@ class workerbee:
       df['timestamp_dt'] = pd.to_datetime(df.timestamp, unit='ms')
       df.set_index('timestamp_dt')[name].plot()
     plt.xlabel("Date/Time")
-    plt.ylabel(attribute)
+    plt.ylabel(attribute.capitalize())
     plt.legend()
     plt.savefig(filename, transparent=True)
