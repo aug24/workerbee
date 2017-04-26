@@ -108,18 +108,18 @@ class workerbee:
   def printNodeAttribute(self, name, attribute):
     print json.dumps(self.getNodeAttribute(name, attribute))
 
-  def graphNodeAttribute(self, name, attribute, filename):
+  def graphNodeAttribute(self, names, attribute, filename):
     xdata=[]
     ydata=[]
-    values=self.getNodeAttribute(name, attribute)
-    for value in sorted(values.iterkeys()):
-      xdata.append(value)
-      ydata.append(values[value])
-    xdf=pd.DataFrame({"timestamp": xdata})
-    ydf=pd.DataFrame({"temperature": ydata})
-
-    fig, ax = plt.subplots(figsize=(100, 20))
-    ax.plot(xdf,ydf)
-    plt.xlabel("Date (Unix Millis)")
+    for name in names:
+      values=self.getNodeAttribute(name, attribute)
+      list_of_lists = []
+      for value in sorted(values.iterkeys()):
+        list_of_lists += [[int(value), values[value]]]
+      df = pd.DataFrame(list_of_lists, columns=['timestamp',name])
+      df['timestamp_dt'] = pd.to_datetime(df.timestamp, unit='ms')
+      df.set_index('timestamp_dt')[name].plot()
+    plt.xlabel("Date/Time")
     plt.ylabel("Temperature (Centigrade)")
+    plt.legend()
     plt.savefig(filename, transparent=True)
