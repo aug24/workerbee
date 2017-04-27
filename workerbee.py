@@ -93,7 +93,13 @@ class workerbee:
       if node["name"] == name:
         print json.dumps(node, indent=4, sort_keys=True)
 
-  def getNodeAttribute(self, name, attribute):
+  def showNodeAttribute(self, names, attribute, start=None, end=None):
+    results={}
+    for name in names:
+      results[name]=self.getNodeAttribute(name, attribute, start, end)
+    print json.dumps(results)
+
+  def getNodeAttribute(self, name, attribute, start=None, end=None):
     node=self.getNode(name)
     deviceId=node["href"].split('/')[-1]
     url="omnia/channels/" + attribute + "%40" + deviceId
@@ -111,9 +117,6 @@ class workerbee:
       sys.exit(1)
     values=data['channels'][0]['values']
     return values
-
-  def printNodeAttribute(self, name, attribute):
-    print json.dumps(self.getNodeAttribute(name, attribute))
 
   def graphNodeAttribute(self, names, attribute, filename):
     xdata=[]
