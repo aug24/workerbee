@@ -131,5 +131,8 @@ class workerbee:
       df.set_index('timestamp_dt')[name].plot()
     plt.xlabel("Date/Time")
     plt.ylabel(attribute.capitalize())
-    plt.legend()
-    plt.savefig(filename, transparent=True)
+    legend=plt.legend(loc='center right', bbox_to_anchor=(1.5, 0.5))
+    plt.savefig(filename, bbox_extra_artists=(legend,), bbox_inches='tight')
+    print "Saved to '" + filename + "'"
+
+
