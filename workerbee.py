@@ -85,8 +85,10 @@ class workerbee:
     sys.exit(1)
 
   def showNodes(self):
+    nodes=[]
     for node in self.nodeInfo["nodes"]: 
-      print json.dumps(node, indent=4, sort_keys=True)
+      nodes.append(node)
+    print json.dumps(nodes, indent=4, sort_keys=True)
 
   def showNode(self, name):
     for node in self.nodeInfo["nodes"]: 
