@@ -69,6 +69,8 @@ class workerbee:
       return
     response = self.get('omnia/nodes', None)
     self.nodeInfo=response.json()
+    #for node in self.nodeInfo:
+    #self.nodeMap=response.json()
 
   def get(self, address, data):
     headers = {'X-Omnia-Access-Token': str(self.userInfo['ApiSession'])}
@@ -90,10 +92,15 @@ class workerbee:
       nodes.append(node)
     print json.dumps(nodes, indent=4, sort_keys=True)
 
-  def showNode(self, name):
+  def showNode(self, nodeName):
+    for node in self.nodeInfo["nodes"]: 
+      if node['name'] == nodeName:
+        print json.dumps(node, indent=4, sort_keys=True)
+
+  def showNodeAttributes(self, name):
     for node in self.nodeInfo["nodes"]: 
       if node["name"] == name:
-        print json.dumps(node, indent=4, sort_keys=True)
+        print json.dumps(node['attributes'], indent=4, sort_keys=True)
 
   def showNodeAttribute(self, names, attribute, start=None, end=None):
     results={}
