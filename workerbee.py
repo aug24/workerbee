@@ -102,6 +102,15 @@ class workerbee:
       if node["name"] == name:
         print json.dumps(node['attributes'], indent=4, sort_keys=True)
 
+  def showLiveNodeAttribute(self, name, attribute):
+    for node in self.nodeInfo["nodes"]: 
+      if node["name"] == name:
+        attributes=node['attributes']
+        if attribute in attributes:
+           print json.dumps(node['attributes'][attribute], indent=4, sort_keys=True)
+        else:
+           print "Device '" + name + "' does not include live '" + attribute + "' data"
+
   def showNodeAttribute(self, names, attribute, start=None, end=None):
     results={}
     for name in names:
