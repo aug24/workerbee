@@ -7,7 +7,8 @@ parser.add_argument('--username', required=True, help='Username')
 parser.add_argument('--debug', required=False, help='Debug', action='store_true')
 options = parser.parse_args()
 
-hc = workerbee.workerbee(options.username, options.debug)
+hc = workerbee.workerbee(options.debug, options.username)
+
 hc.login()
 hc.nodes()
 hc.showNodes()

@@ -10,7 +10,8 @@ parser.add_argument('--attribute', required=False, help='Attribute, eg temperatu
 parser.add_argument('--filename', required=True, help='Filename')
 options = parser.parse_args()
 
-hc = workerbee.workerbee(options.username, options.debug)
+hc = workerbee.workerbee(options.debug, options.username)
+
 hc.login()
 hc.nodes()
 hc.graphNodeAttribute(options.device.split(','), options.attribute, options.filename)

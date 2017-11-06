@@ -19,12 +19,13 @@ one_hour_ago_millis = time_millis_ago(60 * 60 * 1000)
 
 class workerbee:
 
-  def __init__(self, username, debug):
+  def __init__(self, debug, username=None):
     self.clientName='workerbee'
     self.username=username
     self.loggedin=False
     self.honeycomb='https://api-prod.bgchprod.info:8443/'
     self.userInfo=None
+    self.nodeInfo=None
     try:
       self.password=os.environ['WORKERBEE_PASSWORD'] 
     except KeyError:
@@ -32,11 +33,21 @@ class workerbee:
     self.headers = {}
     self.debug_flag = debug
 
+  def getUsername(self):
+    return self.username
+
+  def getPassword(self):
+    return self.password
+
   def debug(self, message):
     if (self.debug_flag):
       print message
 
-  def login(self):
+  def login(self, username=None, password=None):
+    if username: 
+      self.username==username
+    if password: 
+      self.password==password
     if self.password==None:
       self.password=getpass.getpass()
 
@@ -44,13 +55,15 @@ class workerbee:
     response = requests.post(self.honeycomb + 'api/login', params=data)
     if response.status_code!=200:
       print "Failed to log in; got return code " + str(response.status_code)
-      print response.text
-      sys.exit(1)
-    self.userInfo=response.json()
-    self.headers['X-Omnia-Access-Token']=str(self.userInfo['ApiSession'])
-    self.headers['Accept']='application/vnd.alertme.zoo-6.4+json'
-    self.headers['X-AlertMe-Client']=self.clientName
-    self.debug("Logged on")
+      return False
+    else:
+      print "Logged in; got return code " + str(response.status_code)
+      self.userInfo=response.json()
+      self.headers['X-Omnia-Access-Token']=str(self.userInfo['ApiSession'])
+      self.headers['Accept']='application/vnd.alertme.zoo-6.4+json'
+      self.headers['X-AlertMe-Client']=self.clientName
+      self.debug("Logged on")
+      return True
 
   def logout(self):
     if self.userInfo==None:
@@ -67,8 +80,16 @@ class workerbee:
   def nodes(self):
     if self.userInfo==None:
       return
+    if self.nodeInfo:
+      return self.nodeInfo
+
     response = self.get('omnia/nodes', None)
     self.nodeInfo=response.json()
+
+    self.nodeInfo['nodesDict']={}
+    for node in self.nodeInfo['nodes']:
+      self.nodeInfo['nodesDict'][node['name']]=node
+    return self.nodeInfo
 
   def get(self, address, data):
     headers = {'X-Omnia-Access-Token': str(self.userInfo['ApiSession'])}
@@ -120,11 +141,11 @@ class workerbee:
     values=data['channels'][0]['values']
     return values
 
-  def graphNodeAttribute(self, names, attribute, filename):
+  def graphNodeAttribute(self, names, attribute, filename, start=None, end=None):
     xdata=[]
     ydata=[]
     for name in names:
-      values=self.getNodeAttribute(name, attribute)
+      values=self.getNodeAttribute(name, attribute, start, end)
       list_of_lists = []
       for value in sorted(values.iterkeys()):
         list_of_lists += [[int(value), values[value]]]
