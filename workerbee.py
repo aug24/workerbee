@@ -117,6 +117,8 @@ class workerbee:
 
     response = self.get('omnia/nodes', None)
     self.nodeInfo=response.json()
+    #for node in self.nodeInfo:
+    #self.nodeMap=response.json()
 
     self.nodeInfo['nodesDict']={}
     for node in self.nodeInfo['nodes']:
@@ -143,10 +145,24 @@ class workerbee:
       nodes.append(node)
     print json.dumps(nodes, indent=4, sort_keys=True)
 
-  def showNode(self, name):
+  def showNode(self, nodeName):
+    for node in self.nodeInfo["nodes"]: 
+      if node['name'] == nodeName:
+        print json.dumps(node, indent=4, sort_keys=True)
+
+  def showNodeAttributes(self, name):
     for node in self.nodeInfo["nodes"]: 
       if node["name"] == name:
-        print json.dumps(node, indent=4, sort_keys=True)
+        print json.dumps(node['attributes'], indent=4, sort_keys=True)
+
+  def showLiveNodeAttribute(self, name, attribute):
+    for node in self.nodeInfo["nodes"]: 
+      if node["name"] == name:
+        attributes=node['attributes']
+        if attribute in attributes:
+           print json.dumps(node['attributes'][attribute], indent=4, sort_keys=True)
+        else:
+           print "Device '" + name + "' does not include live '" + attribute + "' data"
 
   def showNodeAttribute(self, names, attribute, start=None, end=None):
     results={}
