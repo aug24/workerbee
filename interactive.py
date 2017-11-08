@@ -41,6 +41,26 @@ def node(nodename):
     output = output + '</ul>'
     return output
 
+@route('/channels')
+def channels():
+    output='<ul>'
+    channels = hc.channels()['channelsDict'].keys()
+    channels.sort()
+    for channel in channels:
+        output = output + '<li>' + '<a href="channel/' + channel + '">' + channel + '</a>' + '</li>'
+    output = output + '</ul>'
+    return output
+
+@route('/events')
+def events():
+    output='<ul>'
+    events = hc.events()['eventsDict'].keys()
+    events.sort()
+    for event in events:
+        output = output + '<li>' + '<a href="event/' + event + '">' + event + '</a>' + '</li>'
+    output = output + '</ul>'
+    return output
+
 @route('/nodes')
 def nodes():
     output='<ul>'
@@ -60,6 +80,8 @@ def do_login():
             <p>Your login information was correct.</p>
             <ul>
                 <li><a href="/nodes">nodes</li>
+                <li><a href="/channels">channels</li>
+                <li><a href="/events">events</li>
                 <li><a href="/logout">logout</li></ul>
         '''
     else:

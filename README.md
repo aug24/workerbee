@@ -1,19 +1,34 @@
 # workerbee
 An interface to a honeycomb, created by a drone.
 
-# Setup
+## Setup
 
 Pip installs:
  * pandas
  * requests
  * plotly
 
-# Basic usage (so far):
+Set and export PYTHONPATH.
 
-To create a graph of the last 24 hours 'temperature' channel from a specific device:
+# Usage
+
+## Expose password (required for non-interactive use, optional for interactive)
 
 ```
   read -s -p "Hivehome password: " WORKERBEE_PASSWORD; echo
   export WORKERBEE_PASSWORD
-  python graph.py --username <user name> --device <device name> --filename <file name>
+```
+
+## Interactive usage
+
+```
+  python interactive.py [--username <user name>] [--debug]
+```
+
+## Command line usage (so far)
+
+To create a graph of the last 24 hours 'temperature' channel from a specific device:
+
+```
+  python graph.py --username <user name> --device <device name> --filename <file name> [--debug]
 ```

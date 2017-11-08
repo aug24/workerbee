@@ -26,6 +26,8 @@ class workerbee:
     self.honeycomb='https://api-prod.bgchprod.info:8443/'
     self.userInfo=None
     self.nodeInfo=None
+    self.eventInfo=None
+    self.channelInfo=None
     try:
       self.password=os.environ['WORKERBEE_PASSWORD'] 
     except KeyError:
@@ -76,6 +78,36 @@ class workerbee:
     self.userInfo==None
     self.headers = {}
     self.debug("Logged off")
+
+  def events(self):
+    if self.userInfo==None:
+      return
+    if self.eventInfo:
+      return self.eventInfo
+
+    response = self.get('omnia/events', None)
+    self.eventInfo=response.json()
+    print self.eventInfo
+
+    self.eventInfo['eventsDict']={}
+    for event in self.eventInfo['events']:
+      self.eventInfo['eventsDict'][event['name']]=event
+    return self.eventInfo
+
+  def channels(self):
+    if self.userInfo==None:
+      return
+    if self.channelInfo:
+      return self.channelInfo
+
+    response = self.get('omnia/channels', None)
+    self.channelInfo=response.json()
+    print self.channelInfo
+
+    self.channelInfo['channelsDict']={}
+    for channel in self.channelInfo['channels']:
+      self.channelInfo['channelsDict'][channel['id']]=channel
+    return self.channelInfo
 
   def nodes(self):
     if self.userInfo==None:
@@ -137,11 +169,13 @@ class workerbee:
     data=self.get(url, options).json()
     if not 'channels' in data.keys():
       print "Device '" + name + "' does not include '" + attribute + "' data"
+      print data
       sys.exit(1)
     values=data['channels'][0]['values']
     return values
 
   def graphNodeAttribute(self, names, attribute, filename, start=None, end=None):
+    plt.clf()
     xdata=[]
     ydata=[]
     for name in names:
